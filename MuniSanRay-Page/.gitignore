@@ -1,0 +1,36 @@
+# Documentación (no publicar aún)
+*.md
+
+# Secrets / local dev
+run-local.ps1
+application-local.properties
+.env
+.env.local
+*.env
+
+# Java / Maven
+sgdp-backend/target/
+sgdp-backend/.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Node / frontend
+sgdp-frontend/node_modules/
+sgdp-frontend/dist/
+sgdp-frontend/coverage/
+
+# IDEs
+.idea/
+*.iml
+.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db

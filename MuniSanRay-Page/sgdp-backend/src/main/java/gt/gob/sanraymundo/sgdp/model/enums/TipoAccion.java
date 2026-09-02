@@ -1,0 +1,42 @@
+package gt.gob.sanraymundo.sgdp.model.enums;
+
+public enum TipoAccion {
+    LOGIN_EXITOSO,
+    LOGIN_FALLIDO,
+    LOGOUT,
+    CUENTA_BLOQUEADA,
+
+    CREATE_DOC,
+    READ_DOC,
+    UPDATE_DOC,
+    DELETE_DOC,
+    ARCHIVE_DOC,
+    REACTIVATE_DOC,
+    DOWNLOAD_DOC,
+    VERSION_DOC,
+
+    CREATE_SOL,
+    ASSIGN_SOL,
+    RESPOND_SOL,
+    DENY_SOL,
+    PRORROGA_SOL,
+    VENCIMIENTO_SOL,
+
+    CREATE_USER,
+    UPDATE_USER,
+    DISABLE_USER,
+    RESET_PASSWORD,
+
+    PUBLISH_OFICIO,
+
+    CREATE_CAT,
+    UPDATE_CAT,
+    DELETE_CAT,
+
+    ACCESS_DENIED,
+
+    INTEGRITY_FAIL,
+
+    EXPORT_REPORT,
+    EXPORT_LOG
+}
