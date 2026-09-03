@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +24,8 @@ public class AuditoriaAdminService {
     public Page<AuditoriaResponse> listar(
             String accion,
             Long usuarioId,
-            LocalDateTime desde,
-            LocalDateTime hasta,
+            Instant desde,
+            Instant hasta,
             Pageable pageable
     ) {
         if (accion != null && !accion.isBlank()) {

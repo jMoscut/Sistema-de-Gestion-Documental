@@ -11,6 +11,7 @@ import {
   KeyRound,
   LockOpen,
   Lock,
+  ShieldOff,
   X,
   Users,
   AlertTriangle,
@@ -433,6 +434,21 @@ export default function UsuariosPage() {
     }
   }
 
+  const desbloquearMutation = useMutation({
+    mutationFn: (id: number) => usuariosService.desbloquear(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['usuarios'] }),
+    onError: (err: unknown) => {
+      const axiosErr = err as { response?: { data?: { error?: string } } }
+      window.alert(axiosErr.response?.data?.error ?? 'Error al desbloquear la cuenta.')
+    },
+  })
+
+  const handleDesbloquear = (usuario: UsuarioResponse) => {
+    if (window.confirm(`¿Desbloquear la cuenta de ${usuario.nombreCompleto}?`)) {
+      desbloquearMutation.mutate(usuario.id)
+    }
+  }
+
   const totalPages = data?.totalPages ?? 0
   const currentPage = data?.number ?? 0
   const COLS = 8
@@ -608,6 +624,16 @@ export default function UsuariosPage() {
                         >
                           {u.activo ? <Lock size={15} /> : <LockOpen size={15} />}
                         </button>
+                        {u.bloqueadoHasta && (
+                          <button
+                            title="Desbloquear cuenta"
+                            onClick={() => handleDesbloquear(u)}
+                            disabled={desbloquearMutation.isPending}
+                            className="p-1.5 rounded-md text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors disabled:opacity-40"
+                          >
+                            <ShieldOff size={15} />
+                          </button>
+                        )}
                         <button
                           title="Restablecer contraseña"
                           onClick={() => setResetUsuario(u)}

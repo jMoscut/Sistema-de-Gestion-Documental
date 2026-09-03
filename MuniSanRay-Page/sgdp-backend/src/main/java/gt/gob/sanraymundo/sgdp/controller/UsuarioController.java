@@ -95,6 +95,21 @@ public class UsuarioController {
     }
 
     // -------------------------------------------------------------------------
+    // PUT /api/usuarios/{id}/desbloquear
+    // -------------------------------------------------------------------------
+
+    @PutMapping("/{id}/desbloquear")
+    public ResponseEntity<UsuarioResponse> desbloquearCuenta(
+            @PathVariable Long id,
+            Authentication auth,
+            @RequestHeader(value = "X-Forwarded-For", required = false) String xForwardedFor,
+            HttpServletRequest request
+    ) {
+        String ip = extractIp(xForwardedFor, request);
+        return ResponseEntity.ok(usuarioService.desbloquearCuenta(id, auth.getName(), ip));
+    }
+
+    // -------------------------------------------------------------------------
     // PUT /api/usuarios/{id}/reset-password
     // -------------------------------------------------------------------------
 

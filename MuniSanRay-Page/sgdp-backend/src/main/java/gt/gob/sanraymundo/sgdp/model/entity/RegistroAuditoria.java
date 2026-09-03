@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -23,7 +23,7 @@ public class RegistroAuditoria {
     private Long id;
 
     @Column(name = "timestamp_utc", nullable = false, updatable = false)
-    private LocalDateTime timestampUtc;
+    private Instant timestampUtc;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")
@@ -61,7 +61,7 @@ public class RegistroAuditoria {
     @PrePersist
     protected void onCreate() {
         if (this.timestampUtc == null) {
-            this.timestampUtc = LocalDateTime.now();
+            this.timestampUtc = Instant.now();
         }
     }
 }

@@ -15,8 +15,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
@@ -28,6 +31,27 @@ public class UsuarioService {
     private final HistorialContrasenaRepository historialContrasenaRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditoriaService auditoriaService;
+
+    /**
+     * Registra un intento fallido de login en su propia transacción (REQUIRES_NEW),
+     * para que el contador persista aunque el login() que la invoca termine
+     * lanzando una excepción y haciendo rollback de su propia transacción.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Usuario registrarIntentoFallido(Long usuarioId, int maxIntentos, int minutosBloqueo) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new NegocioException("Usuario no encontrado"));
+
+        int intentos = (usuario.getIntentosFallidos() == null ? 0 : usuario.getIntentosFallidos()) + 1;
+        usuario.setIntentosFallidos(intentos);
+
+        if (intentos >= maxIntentos) {
+            usuario.setBloqueadoHasta(LocalDateTime.now(ZoneOffset.UTC).plusMinutes(minutosBloqueo));
+            usuario.setIntentosFallidos(0);
+        }
+
+        return usuarioRepository.save(usuario);
+    }
 
     // -------------------------------------------------------------------------
     // listar
@@ -196,6 +220,45 @@ public class UsuarioService {
                 saved.getNombreUsuario(),
                 "EXITO",
                 java.util.Map.of("estado", detalle)
+        );
+
+        return UsuarioResponse.from(saved);
+    }
+
+    // -------------------------------------------------------------------------
+    // desbloquearCuenta
+    // -------------------------------------------------------------------------
+
+    @Transactional
+    public UsuarioResponse desbloquearCuenta(Long id, String nombreUsuarioAdmin, String ip) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new NegocioException("Usuario no encontrado con id: " + id));
+
+        boolean bloqueada = usuario.getBloqueadoHasta() != null
+                && usuario.getBloqueadoHasta().isAfter(LocalDateTime.now(ZoneOffset.UTC));
+
+        if (!bloqueada) {
+            throw new NegocioException("La cuenta no está bloqueada.");
+        }
+
+        usuario.setBloqueadoHasta(null);
+        usuario.setIntentosFallidos(0);
+        Usuario saved = usuarioRepository.save(usuario);
+
+        Long adminId = usuarioRepository.findByNombreUsuario(nombreUsuarioAdmin)
+                .map(Usuario::getId)
+                .orElse(null);
+
+        auditoriaService.registrar(
+                adminId,
+                nombreUsuarioAdmin,
+                ip,
+                TipoAccion.DESBLOQUEO_CUENTA,
+                "USUARIO",
+                saved.getId().toString(),
+                saved.getNombreUsuario(),
+                "EXITO",
+                null
         );
 
         return UsuarioResponse.from(saved);

@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuditoriaService auditoriaService;
+    private final UsuarioService usuarioService;
 
     /**
      * Autenticar usuario y generar JWT.
@@ -63,29 +66,28 @@ public class AuthService {
 
         // Check if account is currently locked
         if (usuario.getBloqueadoHasta() != null
-                && usuario.getBloqueadoHasta().isAfter(LocalDateTime.now())) {
+                && usuario.getBloqueadoHasta().isAfter(LocalDateTime.now(ZoneOffset.UTC))) {
             auditoriaService.registrarFallo(usuario.getId(), usuario.getNombreUsuario(), ipOrigen,
                     TipoAccion.LOGIN_FALLIDO, "Cuenta bloqueada hasta: " + usuario.getBloqueadoHasta());
             throw new NegocioException(
                     "Cuenta bloqueada temporalmente. Intente nuevamente después de las "
-                    + usuario.getBloqueadoHasta().toLocalTime().withNano(0));
+                    + aHoraGuatemala(usuario.getBloqueadoHasta()));
         }
 
         // Verify password
         if (!passwordEncoder.matches(request.getContrasena(), usuario.getContrasenaHash())) {
-            int intentos = (usuario.getIntentosFallidos() == null ? 0 : usuario.getIntentosFallidos()) + 1;
-            usuario.setIntentosFallidos(intentos);
+            // Persistido en transacción propia (REQUIRES_NEW): debe sobrevivir aunque
+            // este método termine lanzando una excepción y haga rollback.
+            Usuario actualizado = usuarioService.registrarIntentoFallido(
+                    usuario.getId(), MAX_INTENTOS_FALLIDOS, MINUTOS_BLOQUEO);
 
-            if (intentos >= MAX_INTENTOS_FALLIDOS) {
-                usuario.setBloqueadoHasta(LocalDateTime.now().plusMinutes(MINUTOS_BLOQUEO));
-                usuario.setIntentosFallidos(0);
-                usuarioRepository.save(usuario);
-
+            if (actualizado.getBloqueadoHasta() != null
+                    && actualizado.getBloqueadoHasta().isAfter(LocalDateTime.now(ZoneOffset.UTC))) {
                 auditoriaService.registrar(
                         usuario.getId(), usuario.getNombreUsuario(), ipOrigen,
                         TipoAccion.CUENTA_BLOQUEADA, "USUARIO", usuario.getId().toString(),
                         usuario.getNombreCompleto(), "EXITO",
-                        Map.of("bloqueado_hasta", usuario.getBloqueadoHasta().toString(),
+                        Map.of("bloqueado_hasta", actualizado.getBloqueadoHasta().toString(),
                                "motivo", "Máximo de intentos fallidos alcanzado")
                 );
                 throw new NegocioException(
@@ -93,9 +95,9 @@ public class AuthService {
                         + " minutos debido a múltiples intentos fallidos.");
             }
 
-            usuarioRepository.save(usuario);
             auditoriaService.registrarFallo(usuario.getId(), usuario.getNombreUsuario(), ipOrigen,
-                    TipoAccion.LOGIN_FALLIDO, "Contraseña incorrecta (intento " + intentos + ")");
+                    TipoAccion.LOGIN_FALLIDO,
+                    "Contraseña incorrecta (intento " + actualizado.getIntentosFallidos() + ")");
             throw new BadCredentialsException("Credenciales inválidas.");
         }
 
@@ -120,6 +122,18 @@ public class AuthService {
                 .nombre(usuario.getNombreCompleto())
                 .requiereCambioContrasena(Boolean.TRUE.equals(usuario.getRequiereCambioContrasena()))
                 .build();
+    }
+
+    /**
+     * Convierte un LocalDateTime almacenado en UTC (bloqueadoHasta) a la hora
+     * local de Guatemala (UTC-6, sin horario de verano), para mostrarla al usuario.
+     */
+    private String aHoraGuatemala(LocalDateTime utc) {
+        return utc.atOffset(ZoneOffset.UTC)
+                .atZoneSameInstant(ZoneId.of("America/Guatemala"))
+                .toLocalTime()
+                .withNano(0)
+                .toString();
     }
 
     /**

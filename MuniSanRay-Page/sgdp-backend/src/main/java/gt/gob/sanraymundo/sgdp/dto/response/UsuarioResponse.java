@@ -20,6 +20,7 @@ public class UsuarioResponse {
     private Boolean activo;
     private Boolean requiereCambioContrasena;
     private Integer intentosFallidos;
+    private LocalDateTime bloqueadoHasta;
     private LocalDateTime ultimoAcceso;
     private LocalDateTime createdAt;
 
@@ -35,6 +36,7 @@ public class UsuarioResponse {
                 .activo(u.getActivo())
                 .requiereCambioContrasena(u.getRequiereCambioContrasena())
                 .intentosFallidos(u.getIntentosFallidos())
+                .bloqueadoHasta(u.getBloqueadoHasta())
                 .ultimoAcceso(u.getUltimoAcceso())
                 .createdAt(u.getCreatedAt())
                 .build();

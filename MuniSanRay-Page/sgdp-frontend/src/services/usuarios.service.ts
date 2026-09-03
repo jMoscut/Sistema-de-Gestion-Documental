@@ -38,6 +38,10 @@ export const usuariosService = {
     return api.put(`/usuarios/${id}/toggle-activo`).then((r) => r.data)
   },
 
+  desbloquear(id: number): Promise<UsuarioResponse> {
+    return api.put(`/usuarios/${id}/desbloquear`).then((r) => r.data)
+  },
+
   resetPassword(id: number, body: ResetPasswordRequest): Promise<void> {
     return api.put(`/usuarios/${id}/reset-password`, body).then((r) => r.data)
   },

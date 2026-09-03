@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 
 @Slf4j
@@ -25,6 +25,7 @@ public class AuditoriaService {
     private final UsuarioRepository usuarioRepository;
     private final ObjectMapper objectMapper;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registrar(
             Long usuarioId,
             String usuarioDesc,
@@ -52,7 +53,7 @@ public class AuditoriaService {
         }
 
         RegistroAuditoria registro = RegistroAuditoria.builder()
-                .timestampUtc(LocalDateTime.now())
+                .timestampUtc(Instant.now())
                 .usuario(usuario)
                 .usuarioDesc(usuarioDesc)
                 .ipOrigen(ipOrigen)

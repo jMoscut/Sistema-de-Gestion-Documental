@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Repository
 public interface AuditoriaRepository extends JpaRepository<RegistroAuditoria, Long> {
@@ -18,8 +18,8 @@ public interface AuditoriaRepository extends JpaRepository<RegistroAuditoria, Lo
     Page<RegistroAuditoria> findByAccionOrderByTimestampUtcDesc(String accion, Pageable pageable);
 
     Page<RegistroAuditoria> findByTimestampUtcBetweenOrderByTimestampUtcDesc(
-            LocalDateTime desde,
-            LocalDateTime hasta,
+            Instant desde,
+            Instant hasta,
             Pageable pageable
     );
 }

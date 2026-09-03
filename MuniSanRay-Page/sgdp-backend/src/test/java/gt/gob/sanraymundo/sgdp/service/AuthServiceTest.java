@@ -19,12 +19,14 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -39,6 +41,7 @@ class AuthServiceTest {
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private JwtUtil jwtUtil;
     @Mock private AuditoriaService auditoriaService;
+    @Mock private UsuarioService usuarioService;
 
     @InjectMocks
     private AuthService authService;
@@ -65,6 +68,10 @@ class AuthServiceTest {
 
         when(usuarioRepository.findByNombreUsuario("user@muni.gt")).thenReturn(Optional.of(usuario));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
+        when(usuarioService.registrarIntentoFallido(eq(1L), anyInt(), anyInt())).thenAnswer(inv -> {
+            usuario.setIntentosFallidos(usuario.getIntentosFallidos() + 1);
+            return usuario;
+        });
 
         assertThatThrownBy(() -> authService.login(req, "127.0.0.1"))
                 .isInstanceOf(BadCredentialsException.class);
@@ -79,6 +86,14 @@ class AuthServiceTest {
 
         when(usuarioRepository.findByNombreUsuario("user@muni.gt")).thenReturn(Optional.of(usuario));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
+        when(usuarioService.registrarIntentoFallido(eq(1L), anyInt(), anyInt())).thenAnswer(inv -> {
+            usuario.setIntentosFallidos(usuario.getIntentosFallidos() + 1);
+            if (usuario.getIntentosFallidos() >= 3) {
+                usuario.setBloqueadoHasta(LocalDateTime.now(ZoneOffset.UTC).plusMinutes(15));
+                usuario.setIntentosFallidos(0);
+            }
+            return usuario;
+        });
 
         // Al llegar a 3 intentos, AuthService lanza NegocioException (cuenta bloqueada)
         assertThatThrownBy(() -> authService.login(req, "127.0.0.1"))
@@ -86,13 +101,13 @@ class AuthServiceTest {
                 .hasMessageContaining("bloqueada");
 
         assertThat(usuario.getBloqueadoHasta()).isNotNull();
-        assertThat(usuario.getBloqueadoHasta()).isAfter(LocalDateTime.now());
+        assertThat(usuario.getBloqueadoHasta()).isAfter(LocalDateTime.now(ZoneOffset.UTC));
     }
 
     @Test
     void login_cuentaBloqueada_lanzaNegocioException() {
         Usuario usuario = crearUsuario("user@muni.gt", RolUsuario.FUNCIONARIO, 0);
-        usuario.setBloqueadoHasta(LocalDateTime.now().plusMinutes(10));
+        usuario.setBloqueadoHasta(LocalDateTime.now(ZoneOffset.UTC).plusMinutes(10));
         LoginRequest req = loginRequest("user@muni.gt", "cualquier");
 
         when(usuarioRepository.findByNombreUsuario("user@muni.gt")).thenReturn(Optional.of(usuario));

@@ -9,7 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @RestController
 @RequestMapping("/api/admin/auditoria")
@@ -31,17 +33,21 @@ public class AuditoriaAdminController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size
     ) {
-        LocalDateTime desdeDateTime = (desde != null && !desde.isBlank())
-                ? LocalDateTime.parse(desde)
+        // Los filtros de fecha vienen del <input type="datetime-local"> del admin,
+        // es decir, hora local de Guatemala (sin offset) — se interpretan como tal
+        // y se convierten al instante UTC real antes de comparar contra la BD.
+        ZoneId zonaGuatemala = ZoneId.of("America/Guatemala");
+        Instant desdeInstant = (desde != null && !desde.isBlank())
+                ? LocalDateTime.parse(desde).atZone(zonaGuatemala).toInstant()
                 : null;
-        LocalDateTime hastaDateTime = (hasta != null && !hasta.isBlank())
-                ? LocalDateTime.parse(hasta)
+        Instant hastaInstant = (hasta != null && !hasta.isBlank())
+                ? LocalDateTime.parse(hasta).atZone(zonaGuatemala).toInstant()
                 : null;
 
         Pageable pageable = PageRequest.of(page, size);
 
         Page<AuditoriaResponse> resultado = auditoriaAdminService.listar(
-                accion, usuarioId, desdeDateTime, hastaDateTime, pageable);
+                accion, usuarioId, desdeInstant, hastaInstant, pageable);
 
         return ResponseEntity.ok(resultado);
     }

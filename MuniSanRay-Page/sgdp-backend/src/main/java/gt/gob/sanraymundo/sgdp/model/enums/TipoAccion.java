@@ -5,6 +5,7 @@ public enum TipoAccion {
     LOGIN_FALLIDO,
     LOGOUT,
     CUENTA_BLOQUEADA,
+    DESBLOQUEO_CUENTA,
 
     CREATE_DOC,
     READ_DOC,

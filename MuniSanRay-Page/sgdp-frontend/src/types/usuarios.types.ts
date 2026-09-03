@@ -11,6 +11,7 @@ export interface UsuarioResponse {
   activo: boolean
   requiereCambioContrasena: boolean
   intentosFallidos: number
+  bloqueadoHasta?: string
   ultimoAcceso?: string
   createdAt: string
 }

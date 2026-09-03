@@ -4,14 +4,14 @@ import gt.gob.sanraymundo.sgdp.model.entity.RegistroAuditoria;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
 public class AuditoriaResponse {
 
     private Long id;
-    private LocalDateTime timestampUtc;
+    private Instant timestampUtc;
     private Long usuarioId;
     private String usuarioDesc;
     private String ipOrigen;
