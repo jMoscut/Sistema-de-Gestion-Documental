@@ -1,7 +1,6 @@
 # SGDP — Especificación de Casos de Uso
 ## Sistema de Gestión Documental Pública · Municipalidad de San Raymundo
 **Autor**: Jackeline Nikole Sanchez Moscut · Carné 7590-22-332 · UMG 2026
-**Asesor**: Ing. Román Estuardo Cancinos Arbizu
 **Versión**: 1.0 · Septiembre 2026
 **Marco legal**: Decreto 57-2008 (LAIP) · ISO 15489-1:2016 · ISO 30300:2020
 
