@@ -13,8 +13,6 @@ Proyecto de Graduación I y II
 | Cliente | Municipalidad de San Raymundo, Guatemala |
 | Estudiante | Jackeline Nikole Sanchez Moscut |
 | Carné | 7590-22-332 |
-| Asesor | Ing. Román Estuardo Cancinos Arbizu |
-| Revisora | [PENDIENTE] |
 | Versión | 2.0 |
 | Fecha | Julio 2026 |
 | Clasificación | Documento de proyecto académico |
