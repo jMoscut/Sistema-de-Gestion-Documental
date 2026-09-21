@@ -22,7 +22,7 @@ Proyecto de tesis — Licenciatura en Ciencias y Sistemas, Universidad Mariano G
 
 **Infraestructura**
 - Backend desplegado en Railway
-- Frontend desplegado en Railway
+- Frontend desplegado en Cloudflare
 - CI/CD con GitHub Actions
 - Escaneo de seguridad OWASP ZAP (baseline scan)
 
