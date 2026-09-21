@@ -1,6 +1,3 @@
-# Documentación (no publicar aún)
-*.md
-
 # Secrets / local dev
 run-local.ps1
 application-local.properties
