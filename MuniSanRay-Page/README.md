@@ -2,7 +2,7 @@
 
 Plataforma de gestión documental para la Municipalidad de San Raymundo: administración de documentos institucionales, atención de solicitudes de acceso a la información (Decreto 57-2008, LAIP) y publicación proactiva de información de oficio conforme al Artículo 10.
 
-Proyecto de tesis — Licenciatura en Ciencias y Sistemas, Universidad Mariano Gálvez de Guatemala.
+Proyecto de graduación — Ingeniería en sistemas y ciencias de la computación, Universidad Mariano Gálvez de Guatemala.
 
 ## Stack
 
