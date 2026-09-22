@@ -431,7 +431,7 @@ Administrar de forma centralizada el acceso al sistema SGDP, garantizando que ú
 - 2.4.4. Si la cuenta no está bloqueada, el sistema compara la contraseña ingresada con el hash BCrypt almacenado.
 - 2.4.5. Si la contraseña es correcta, el sistema reinicia `intentos_fallidos = 0`, actualiza `ultimo_acceso` y genera un JWT con expiración de 8 horas.
 - 2.4.6. Si la contraseña es incorrecta, el sistema incrementa `intentos_fallidos` mediante `UsuarioService.registrarIntentoFallido()`, ejecutado en una transacción independiente (`@Transactional(propagation = REQUIRES_NEW)`) para que el contador persista aunque `login()` termine lanzando una excepción y haciendo rollback de su propia transacción. Si `intentos_fallidos` llega a 3, establece `bloqueado_hasta = now(UTC) + 15 minutos`. [RN-08] [FA04]
-- 2.4.7. Si el campo `requiere_cambio_contrasena` es verdadero, el frontend redirige al usuario a `/admin/cambiar-contrasena` antes de permitir cualquier otra operación. [RN-09]
+- 2.4.7. El JWT generado incluye el claim `requiereCambioContrasena` (tomado directamente del campo homónimo en `usuarios`). Si es verdadero, el frontend redirige al usuario a `/admin/cambiar-contrasena` antes de permitir cualquier otra operación. [RN-09]
 - 2.4.8. El sistema registra el evento `LOGIN_EXITOSO` o `LOGIN_FALLIDO` en `registro_auditoria`. [RN-07]
 - 2.4.9. Fin del flujo normal.
 
@@ -744,8 +744,8 @@ Las contraseñas se almacenan con hash BCrypt. El sistema mantiene historial de 
 - Implementación: `BCryptPasswordEncoder` · tabla `historial_contrasenas` · campos `intentos_fallidos` y `bloqueado_hasta` · `LocalDateTime.now(ZoneOffset.UTC)` · `UsuarioService.registrarIntentoFallido()` / `desbloquearCuenta()` en `REQUIRES_NEW`
 
 **RN-09 — Cambio forzado de contraseña en primer login**
-Todo usuario nuevo, o con contraseña restablecida por el Administrador, debe cambiar su contraseña temporal antes de acceder a cualquier funcionalidad. El frontend redirige obligatoriamente a `/admin/cambiar-contrasena` mientras el flag `requiere_cambio_contrasena` sea verdadero.
-- Implementación: Campo `requiere_cambio_contrasena` en tabla `usuarios` · redirección condicional en frontend
+Todo usuario nuevo, o con contraseña restablecida por el Administrador, debe cambiar su contraseña temporal antes de acceder a cualquier funcionalidad. El JWT lleva el claim `requiereCambioContrasena`; mientras sea verdadero, el frontend redirige obligatoriamente a `/admin/cambiar-contrasena`.
+- Implementación: Campo `requiere_cambio_contrasena` en tabla `usuarios` · claim `requiereCambioContrasena` en `JwtUtil.generateToken()` · redirección condicional en frontend
 
 **RN-10 — Integridad documental SHA-256**
 El hash SHA-256 de cada archivo PDF se calcula en el backend al momento de la carga, nunca en el frontend. En cada descarga autenticada del repositorio, el sistema recalcula el hash desde Cloudflare R2 y lo compara con el hash almacenado. Si no coinciden, la descarga se aborta y se registra `INTEGRITY_FAIL` en auditoría.
