@@ -1177,5 +1177,4 @@ GitHub Push → GitHub Actions:
 ---
 
 *Documento generado: agosto 2026 · SGDP v1.0*  
-*Universidad Mariano Gálvez de Guatemala · Facultad de Ingeniería*  
-*Asesor: Ing. Román Estuardo Cancinos Arbizu*
+*Universidad Mariano Gálvez de Guatemala · Facultad de Ingeniería*

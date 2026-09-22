@@ -25,7 +25,7 @@
 ## CU 0 — Portal Ciudadano de Transparencia
 
 **Versión**: 1.0 · **Fecha**: Septiembre 2026
-**Autor**: Jackeline Nikole Sanchez Moscut · **Asesor**: Ing. Román Estuardo Cancinos Arbizu
+**Autor**: Jackeline Nikole Sanchez Moscut
 
 | Historial de Revisiones | | | |
 |---|---|---|---|
@@ -65,7 +65,7 @@ Centralizar el acceso ciudadano a la información institucional de la Municipali
 - 2.3.10. El ciudadano recibe el archivo PDF en su navegador para su visualización o descarga local.
 - 2.3.11. Fin del caso de uso.
 
-> **Nota de verificación**: a diferencia de las descargas del repositorio de documentos (CU 3), las descargas de información de oficio **no generan actualmente un registro en `registro_auditoria`** — el servicio que las atiende no invoca `AuditoriaService`. Se documenta así porque es el comportamiento real verificado en el código, no porque sea el comportamiento deseable; queda identificado como una brecha frente a RN-07 para una futura iteración.
+> **Nota de verificación**: la descarga pública de un documento de oficio (`GET /api/publico/oficio/v2/documentos/{docId}/archivo`, sin autenticación) **no genera registro en `registro_auditoria`**, de forma consistente e intencional con el resto de descargas anónimas del sistema (tampoco se audita la descarga pública de documentos del repositorio) — no hay un usuario autenticado al cual atribuir el evento. En cambio, la gestión administrativa de la información de oficio (crear/editar/eliminar categorías, carpetas y documentos) sí queda auditada; ver CU 5.
 
 ### 3. Flujos Alternos
 
@@ -109,7 +109,7 @@ Centralizar el acceso ciudadano a la información institucional de la Municipali
 ## CU 1 — Gestión de Solicitudes de Información Pública
 
 **Versión**: 1.0 · **Fecha**: Septiembre 2026
-**Autor**: Jackeline Nikole Sanchez Moscut · **Asesor**: Ing. Román Estuardo Cancinos Arbizu
+**Autor**: Jackeline Nikole Sanchez Moscut
 
 | Historial de Revisiones | | | |
 |---|---|---|---|
@@ -221,7 +221,7 @@ Garantizar el cumplimiento del Artículo 42 del Decreto 57-2008 mediante el cont
 ## CU 2 — Registro y Clasificación Documental
 
 **Versión**: 1.0 · **Fecha**: Septiembre 2026
-**Autor**: Jackeline Nikole Sanchez Moscut · **Asesor**: Ing. Román Estuardo Cancinos Arbizu
+**Autor**: Jackeline Nikole Sanchez Moscut
 
 | Historial de Revisiones | | | |
 |---|---|---|---|
@@ -317,7 +317,7 @@ Garantizar que todos los documentos del repositorio municipal cuenten con los me
 ## CU 3 — Búsqueda y Recuperación de Documentos
 
 **Versión**: 1.0 · **Fecha**: Septiembre 2026
-**Autor**: Jackeline Nikole Sanchez Moscut · **Asesor**: Ing. Román Estuardo Cancinos Arbizu
+**Autor**: Jackeline Nikole Sanchez Moscut
 
 | Historial de Revisiones | | | |
 |---|---|---|---|
@@ -384,7 +384,7 @@ Proveer un mecanismo de búsqueda eficiente y seguro que garantice el acceso dif
 ## CU 4 — Gestión de Usuarios y Control de Acceso
 
 **Versión**: 1.0 · **Fecha**: Septiembre 2026
-**Autor**: Jackeline Nikole Sanchez Moscut · **Asesor**: Ing. Román Estuardo Cancinos Arbizu
+**Autor**: Jackeline Nikole Sanchez Moscut
 
 | Historial de Revisiones | | | |
 |---|---|---|---|
@@ -471,7 +471,7 @@ Administrar de forma centralizada el acceso al sistema SGDP, garantizando que ú
 ## CU 5 — Publicación de Información de Oficio
 
 **Versión**: 1.0 · **Fecha**: Septiembre 2026
-**Autor**: Jackeline Nikole Sanchez Moscut · **Asesor**: Ing. Román Estuardo Cancinos Arbizu
+**Autor**: Jackeline Nikole Sanchez Moscut
 
 | Historial de Revisiones | | | |
 |---|---|---|---|
@@ -509,10 +509,11 @@ Garantizar el cumplimiento del Artículo 10 del Decreto 57-2008 mediante la publ
 - 2.3.8. El sistema ejecuta `POST /api/admin/oficio/carpetas/{carpetaId}/documentos` en formato multipart. [RN-03]
 - 2.3.9. El backend valida el formato PDF, calcula el hash SHA-256 y sube el archivo a Cloudflare R2.
 - 2.3.10. El sistema inserta el registro en la tabla `documento_oficio` con referencia a la carpeta correspondiente.
-- 2.3.11. El sistema retorna éxito y el documento queda disponible de inmediato en el portal ciudadano `/informacion-publica`.
-- 2.3.12. Fin del flujo normal.
+- 2.3.11. El sistema registra el evento `PUBLISH_OFICIO` en `registro_auditoria`, con el usuario, la IP de origen y el documento publicado. [RN-07]
+- 2.3.12. El sistema retorna éxito y el documento queda disponible de inmediato en el portal ciudadano `/informacion-publica`.
+- 2.3.13. Fin del flujo normal.
 
-> **Nota de verificación**: la publicación de información de oficio (creación de categorías, carpetas y documentos) **no genera actualmente registros en `registro_auditoria`** — `OficioAdminService` no invoca `AuditoriaService`. Se documenta así porque es el comportamiento real; queda identificado como brecha frente a RN-07 para una futura iteración, a diferencia del registro de documentos del repositorio (CU 2), que sí audita cada operación.
+> **Nota de verificación**: a diferencia del registro de documentos del repositorio (CU 2), donde la auditoría se invoca desde `DocumentoService`, en información de oficio la llamada a `AuditoriaService` vive en `OficioAdminController` (no en `OficioAdminService`) — mismo resultado final, distinta capa. Crear/editar/eliminar categoría, carpeta o documento quedan todos registrados con `PUBLISH_OFICIO` o `UPDATE_CAT`. Lo único que no se audita es la descarga pública anónima (ver CU 0), por diseño.
 
 ### 3. Flujos Alternos
 
@@ -536,13 +537,14 @@ Garantizar el cumplimiento del Artículo 10 del Decreto 57-2008 mediante la publ
 ### 4. Postcondiciones
 - 4.1. El documento PDF publicado queda disponible de forma inmediata en el portal ciudadano `/informacion-publica` bajo la categoría y carpeta correspondientes.
 - 4.2. Las carpetas con más de 25 días sin actualización generan alertas visibles para el personal responsable (Dashboard y campanita). [RF-14]
+- 4.3. Toda creación, edición o eliminación de categoría, carpeta o documento de oficio queda registrada en `registro_auditoria`. [RN-07]
 
 ---
 
 ## CU 6 — Registro de Auditoría y Trazabilidad
 
 **Versión**: 1.0 · **Fecha**: Septiembre 2026
-**Autor**: Jackeline Nikole Sanchez Moscut · **Asesor**: Ing. Román Estuardo Cancinos Arbizu
+**Autor**: Jackeline Nikole Sanchez Moscut
 
 | Historial de Revisiones | | | |
 |---|---|---|---|
@@ -611,7 +613,7 @@ Garantizar la trazabilidad completa e inmutable de las operaciones del sistema q
 ## CU 7 — Generación de Reportes de Cumplimiento
 
 **Versión**: 1.0 · **Fecha**: Septiembre 2026
-**Autor**: Jackeline Nikole Sanchez Moscut · **Asesor**: Ing. Román Estuardo Cancinos Arbizu
+**Autor**: Jackeline Nikole Sanchez Moscut
 
 | Historial de Revisiones | | | |
 |---|---|---|---|
@@ -681,7 +683,7 @@ Proveer al personal municipal las herramientas de análisis y reportería necesa
 ## CU 8 — Reglas de Negocio Consolidadas
 
 **Versión**: 1.0 · **Fecha**: Septiembre 2026
-**Autor**: Jackeline Nikole Sanchez Moscut · **Asesor**: Ing. Román Estuardo Cancinos Arbizu
+**Autor**: Jackeline Nikole Sanchez Moscut
 
 | Historial de Revisiones | | | |
 |---|---|---|---|
@@ -734,8 +736,8 @@ Los documentos se identifican con DOC-YYYY-NNNN y las solicitudes con SOL-YYYY-N
 - Implementación: `DocumentoService.generarCodigoDocumento()` · `SolicitudService.generarCodigoExpediente()` · tabla `secuencias_codigo`
 
 **RN-07 — Auditoría APPEND-ONLY**
-El sistema registra los eventos de autenticación, usuarios, documentos, solicitudes y exportación de reportes en `registro_auditoria` de forma inmutable. Ningún proceso puede ejecutar UPDATE o DELETE sobre esta tabla. Solo el rol ADMINISTRADOR tiene acceso de lectura al módulo de auditoría. Toda escritura corre en transacción `REQUIRES_NEW`. **Nota de verificación**: la publicación de información de oficio y las descargas públicas de documentos de oficio actualmente no generan eventos de auditoría — es una brecha real frente al ideal de esta regla, documentada explícitamente en CU 0 y CU 5.
-- Implementación: `REVOKE UPDATE, DELETE ON TABLE registro_auditoria FROM sgdp_app` (Flyway **V9**) · `@Transactional(propagation=REQUIRES_NEW)` en AuditoriaService
+El sistema registra los eventos de autenticación, usuarios, documentos, solicitudes, información de oficio y exportación de reportes en `registro_auditoria` de forma inmutable. Ningún proceso puede ejecutar UPDATE o DELETE sobre esta tabla. Solo el rol ADMINISTRADOR tiene acceso de lectura al módulo de auditoría. Toda escritura corre en transacción `REQUIRES_NEW`. Única excepción intencional: las descargas públicas anónimas (documentos del repositorio e información de oficio) no se auditan, por no existir un usuario autenticado al cual atribuir el evento — ver CU 0.
+- Implementación: `REVOKE UPDATE, DELETE ON TABLE registro_auditoria FROM sgdp_app` (Flyway **V9**) · `@Transactional(propagation=REQUIRES_NEW)` en AuditoriaService · en oficio, la llamada se hace desde `OficioAdminController` en vez de `OficioAdminService`
 
 **RN-08 — Seguridad de contraseñas**
 Las contraseñas se almacenan con hash BCrypt. El sistema mantiene historial de las últimas 3 contraseñas para prevenir reutilización. Tras 3 intentos fallidos consecutivos, la cuenta queda bloqueada 15 minutos. El tiempo se calcula y compara en UTC explícito, independiente de la zona horaria del servidor. El Administrador puede desbloquear manualmente antes de que expire el tiempo.
