@@ -51,7 +51,7 @@ Repositorio: `sgdp-backend/` (API) y `sgdp-frontend/` (SPA), cada uno con su pro
 ┌─────────────────────┐      HTTPS/JSON       ┌──────────────────────┐
 │   sgdp-frontend      │ ───────────────────▶  │    sgdp-backend      │
 │   React 18 + Vite    │ ◀───────────────────  │  Spring Boot 3.3.4   │
-│   (Railway)           │       JWT Bearer       │     (Railway)         │
+│ (Cloudflare Pages)    │       JWT Bearer       │     (Railway)         │
 └─────────────────────┘                        └──────────┬───────────┘
                                                             │
                         ┌───────────────────────────────────┼───────────────────────┐
@@ -62,7 +62,7 @@ Repositorio: `sgdp-backend/` (API) y `sgdp-frontend/` (SPA), cada uno con su pro
                  └──────────────┘                   └──────────────────┘   └────────────────────┘
 ```
 
-- **Frontend**: SPA React servida como build estático en Railway. Dos árboles de rutas: público (`/`, `/solicitud`, `/seguimiento`, `/buscar`, `/informacion-publica`) y administrativo (`/admin/*`, protegido por JWT).
+- **Frontend**: SPA React servida como build estático en Cloudflare Pages. Dos árboles de rutas: público (`/`, `/solicitud`, `/seguimiento`, `/buscar`, `/informacion-publica`) y administrativo (`/admin/*`, protegido por JWT).
 - **Backend**: API REST sin estado (`SessionCreationPolicy.STATELESS`). Toda autenticación vía JWT (`Authorization: Bearer <token>`), validado en cada request por `JwtFilter`.
 - **Base de datos**: PostgreSQL 16 serverless en Neon, con Flyway para migraciones versionadas.
 - **Archivos**: todos los PDF (documentos del repositorio y de información de oficio) se almacenan en Cloudflare R2; el backend actúa como proxy — nunca se expone una URL pública directa de R2.
@@ -103,7 +103,7 @@ Repositorio: `sgdp-backend/` (API) y `sgdp-frontend/` (SPA), cada uno con su pro
 | date-fns | 3.6 |
 | Jest + Testing Library | 29.7 / 16.0 |
 
-**Infraestructura**: Railway (backend y frontend), Neon (PostgreSQL 16), Cloudflare R2 (archivos), Brevo (correo), GitHub Actions (CI/CD).
+**Infraestructura**: Railway (backend), Cloudflare Pages (frontend), Neon (PostgreSQL 16), Cloudflare R2 (archivos), Brevo (correo), GitHub Actions (CI/CD).
 
 ---
 
@@ -377,7 +377,7 @@ Workflows en `.github/workflows/`:
 | Workflow | Disparador | Qué hace |
 |---|---|---|
 | `ci.yml` | Push / PR | `mvn verify` (backend, incluye gate JaCoCo) + `npm run test:coverage` (frontend, incluye gate Jest). Bloquea el resto del pipeline si falla cualquiera de los dos |
-| `deploy-frontend.yml` | Push a main (tras CI verde) | Build y deploy del frontend a Railway |
+| `deploy-frontend.yml` | Push a main (tras CI verde) | Build y deploy del frontend a Cloudflare Pages |
 | `security-scan.yml` | Manual (`workflow_dispatch`) | Escaneo OWASP ZAP baseline contra producción (ver sección 17) |
 
 El gate de JaCoCo está ligado a la fase `verify` de Maven (`jacoco-maven-plugin`, ejecución `check` sin `<phase>` explícita, se dispara automáticamente en `verify`) — no requiere un paso adicional en el YAML para hacerse cumplir.
@@ -387,7 +387,7 @@ El gate de JaCoCo está ligado a la fase `verify` de Maven (`jacoco-maven-plugin
 ## 16. Despliegue en Producción
 
 - **Backend**: Railway, contenedor Docker, deploy automático desde GitHub tras CI verde. Migraciones Flyway se aplican al arrancar el contenedor.
-- **Frontend**: Railway, build estático servido tras `npm run build`.
+- **Frontend**: Cloudflare Pages, build estático servido tras `npm run build`.
 - **Base de datos**: Neon (PostgreSQL 16 serverless), con backups automáticos gestionados por el proveedor.
 - **Archivos**: Cloudflare R2.
 - **HSTS**: Railway termina TLS antes de que la petición llegue a la app, por lo que Spring no confiaba en `X-Forwarded-Proto` y no emitía la cabecera `Strict-Transport-Security`. Se corrigió con una sola línea: `server.forward-headers-strategy=framework` en `application.properties`.

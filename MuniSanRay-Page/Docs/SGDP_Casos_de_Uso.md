@@ -44,13 +44,13 @@ Centralizar el acceso ciudadano a la información institucional de la Municipali
 
 **2.1. Actores:**
 - 2.1.1. Ciudadano (Usuario Externo): Persona que accede al portal de forma anónima para consultar información pública, descargar documentos, presentar solicitudes LAIP o dar seguimiento a trámites.
-- 2.1.2. Sistema Informático: Backend Spring Boot desplegado en Railway, que entrega el contenido dinámico consumido por la SPA React (también en Railway).
+- 2.1.2. Sistema Informático: Backend Spring Boot desplegado en Railway, que entrega el contenido dinámico consumido por la SPA React (desplegada en Cloudflare Pages).
 
 **2.2. Precondiciones:**
 - 2.2.1. El backend en Railway debe estar operativo y accesible vía HTTPS.
 - 2.2.2. El sistema debe encontrarse activo con conexión a la base de datos PostgreSQL 16 (Neon).
 - 2.2.3. Al menos una sección de transparencia debe contar con documentos publicados.
-- 2.2.4. El frontend React debe estar desplegado y operativo en Railway.
+- 2.2.4. El frontend React debe estar desplegado y operativo en Cloudflare Pages.
 
 **2.3. Flujo Normal Básico:**
 - 2.3.1. El ciudadano accede a la URL del sistema a través de su navegador web vía HTTPS.

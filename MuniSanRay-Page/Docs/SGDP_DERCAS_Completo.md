@@ -563,7 +563,7 @@ El sistema se diferencia de soluciones genéricas de gestión documental en que 
 
 ### 6.1 Arquitectura de 3 Capas
 
-**Capa de Presentación** (Railway):
+**Capa de Presentación** (Cloudflare Pages):
 - React 18 con TypeScript 5 y Vite 5
 - Tailwind CSS 3.4 para estilos
 - TanStack Query v5 para manejo de estado servidor
@@ -603,7 +603,8 @@ El sistema se diferencia de soluciones genéricas de gestión documental en que 
 | Backend | Spring Security | 6.x | JWT stateless; @PreAuthorize; sin sesiones |
 | Backend | PostgreSQL | 16 | JSONB (detalle de auditoría); transacciones ACID |
 | Backend | Flyway | — | Migraciones versionadas; auditable; reproducible |
-| Infraestructura | Railway | Cloud | Deploy desde GitHub de backend y frontend; env vars; auto-restart |
+| Infraestructura | Railway | Cloud | Deploy del backend desde GitHub; env vars; auto-restart |
+| Infraestructura | Cloudflare Pages | CDN | Deploy del frontend desde GitHub; CDN global; HTTPS automático |
 | Infraestructura | Neon | Serverless PostgreSQL | Branching; scale-to-zero; backups automáticos |
 | Infraestructura | Cloudflare R2 | S3-compatible | Sin egress fees; almacenamiento de PDFs |
 | Infraestructura | Brevo | Email transaccional | Confirmación de solicitud LAIP, notificación de respuesta/denegación (vía API HTTP) |
@@ -1125,7 +1126,7 @@ GitHub Push → GitHub Actions:
   │   └── Coverage threshold (≥50%)
   └── Si todo pasa → Deploy automático:
       ├── Backend → Railway (Docker container)
-      └── Frontend → Railway (build + deploy)
+      └── Frontend → Cloudflare Pages (build + deploy)
 ```
 
 ---
