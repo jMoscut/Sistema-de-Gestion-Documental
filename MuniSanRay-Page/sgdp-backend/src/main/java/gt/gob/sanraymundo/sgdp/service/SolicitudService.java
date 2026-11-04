@@ -25,6 +25,7 @@ import gt.gob.sanraymundo.sgdp.repository.SecuenciaRepository;
 import gt.gob.sanraymundo.sgdp.repository.SolicitudRepository;
 import gt.gob.sanraymundo.sgdp.repository.SolicitudSpecifications;
 import gt.gob.sanraymundo.sgdp.repository.UsuarioRepository;
+import gt.gob.sanraymundo.sgdp.util.GuatemalaTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -65,7 +66,7 @@ public class SolicitudService {
         String codigoExpediente = generarCodigoExpediente();
 
         // 2. Calcular fecha límite = hoy + 10 días hábiles
-        LocalDate hoy = LocalDate.now();
+        LocalDate hoy = GuatemalaTime.today();
         LocalDate fechaLimite = diasHabilesService.calcularFechaLimite(hoy, 10);
 
         // 3. Construir y persistir la solicitud
@@ -158,7 +159,7 @@ public class SolicitudService {
     @Transactional(readOnly = true)
     public Page<SolicitudAdminResponse> listar(String estadoStr, String q, Pageable pageable) {
         var spec = SolicitudSpecifications.and(
-                SolicitudSpecifications.estado(estadoStr, LocalDate.now()),
+                SolicitudSpecifications.estado(estadoStr, GuatemalaTime.today()),
                 SolicitudSpecifications.texto(q)
         );
         return solicitudRepository.findAll(spec, pageable).map(SolicitudAdminResponse::from);
@@ -410,7 +411,7 @@ public class SolicitudService {
      */
     @Transactional
     public String generarCodigoExpediente() {
-        int anioActual = LocalDate.now().getYear();
+        int anioActual = GuatemalaTime.today().getYear();
 
         SecuenciaCodigo seq = secuenciaRepository
                 .findByTipoForUpdate("SOLICITUD")

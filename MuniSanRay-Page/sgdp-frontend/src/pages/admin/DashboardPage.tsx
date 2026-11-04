@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FileText, Inbox, CheckCircle2, Clock, BookOpen, TrendingUp, Pencil, X, Check, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
 import { dashboardService } from '../../services/dashboard.service'
 import { useAuth } from '../../hooks/useAuth'
+import Alert from '../../components/common/Alert'
 import type { MetaModulo } from '../../types/dashboard.types'
 
 interface StatCardProps {
@@ -172,6 +174,14 @@ export default function DashboardPage() {
   const { user } = useAuth()
   const isAdmin = user?.rol === 'ADMINISTRADOR'
 
+  const location = useLocation()
+  const navigate = useNavigate()
+  const accessDenied = Boolean((location.state as { accessDenied?: boolean } | null)?.accessDenied)
+
+  const dismissAccessDenied = () => {
+    navigate(location.pathname, { replace: true, state: {} })
+  }
+
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: dashboardService.getStats,
@@ -192,6 +202,23 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-sm text-gray-500 mt-1">Resumen del sistema en tiempo real</p>
       </div>
+
+      {accessDenied && (
+        <div className="mb-4">
+          <Alert type="error">
+            <div className="flex items-center justify-between gap-4">
+              <span>No tenés permiso para acceder a esa sección.</span>
+              <button
+                onClick={dismissAccessDenied}
+                className="shrink-0 text-red-800 hover:text-red-900"
+                aria-label="Cerrar"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </Alert>
+        </div>
+      )}
 
       <AlertaCarpetasDesactualizadas
         count={data?.carpetasDesactualizadasCount ?? 0}

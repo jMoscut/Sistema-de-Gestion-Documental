@@ -2,6 +2,7 @@ package gt.gob.sanraymundo.sgdp.dto.response;
 
 import gt.gob.sanraymundo.sgdp.model.entity.SolicitudInformacion;
 import gt.gob.sanraymundo.sgdp.model.enums.EstadoSolicitud;
+import gt.gob.sanraymundo.sgdp.util.GuatemalaTime;
 import lombok.Builder;
 import lombok.Data;
 
@@ -37,7 +38,7 @@ public class SolicitudAdminResponse {
     private LocalDateTime updatedAt;
 
     public static SolicitudAdminResponse from(SolicitudInformacion s) {
-        LocalDate hoy = LocalDate.now();
+        LocalDate hoy = GuatemalaTime.today();
         long dias = ChronoUnit.DAYS.between(hoy, s.getFechaLimite());
         if (dias < 0) dias = 0;
 

@@ -7,6 +7,7 @@ import gt.gob.sanraymundo.sgdp.repository.SolicitudRepository;
 import gt.gob.sanraymundo.sgdp.service.AuditoriaService;
 import gt.gob.sanraymundo.sgdp.service.DiasHabilesService;
 import gt.gob.sanraymundo.sgdp.service.EmailService;
+import gt.gob.sanraymundo.sgdp.util.GuatemalaTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -34,7 +35,7 @@ public class PlazosScheduler {
     @Scheduled(cron = "0 0 13 * * *")
     @Transactional
     public void verificarPlazos() {
-        LocalDate hoy = LocalDate.now();
+        LocalDate hoy = GuatemalaTime.today();
 
         List<EstadoSolicitud> estadosActivos = List.of(
                 EstadoSolicitud.PENDIENTE,

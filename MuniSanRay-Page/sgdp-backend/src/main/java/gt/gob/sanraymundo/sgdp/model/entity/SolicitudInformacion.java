@@ -1,6 +1,7 @@
 package gt.gob.sanraymundo.sgdp.model.entity;
 
 import gt.gob.sanraymundo.sgdp.model.enums.EstadoSolicitud;
+import gt.gob.sanraymundo.sgdp.util.GuatemalaTime;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,7 +43,7 @@ public class SolicitudInformacion {
 
     @Column(name = "fecha_recepcion", nullable = false)
     @Builder.Default
-    private LocalDate fechaRecepcion = LocalDate.now();
+    private LocalDate fechaRecepcion = GuatemalaTime.today();
 
     @Column(name = "fecha_limite", nullable = false)
     private LocalDate fechaLimite;

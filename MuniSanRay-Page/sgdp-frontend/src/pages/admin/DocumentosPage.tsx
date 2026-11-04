@@ -611,6 +611,7 @@ function ListaTab() {
   const [selectedDoc, setSelectedDoc] = useState<DocumentoResponse | null>(null)
   const [downloadingId, setDownloadingId] = useState<number | null>(null)
   const [cicloVidaId, setCicloVidaId] = useState<number | null>(null)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
 
   const archivarMutation = useMutation({
     mutationFn: (id: number) => documentosService.archivar(id),
@@ -667,10 +668,21 @@ function ListaTab() {
 
   const handleDownload = useCallback(async (doc: DocumentoResponse) => {
     setDownloadingId(doc.id)
+    setDownloadError(null)
     try {
       await documentosService.descargar(doc.id, doc.nombreArchivo)
-    } catch {
-      // silently fail — user will notice nothing downloaded
+    } catch (err) {
+      let mensaje = 'No se pudo descargar el documento. Intente nuevamente.'
+      const data = (err as { response?: { data?: unknown } })?.response?.data
+      if (data instanceof Blob) {
+        try {
+          const parsed = JSON.parse(await data.text())
+          mensaje = parsed.detalle ?? parsed.error ?? mensaje
+        } catch {
+          // body no es JSON; se mantiene el mensaje genérico
+        }
+      }
+      setDownloadError(mensaje)
     } finally {
       setDownloadingId(null)
     }
@@ -737,6 +749,8 @@ function ListaTab() {
           </Button>
         </div>
       </div>
+
+      {downloadError && <Alert type="error">{downloadError}</Alert>}
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">

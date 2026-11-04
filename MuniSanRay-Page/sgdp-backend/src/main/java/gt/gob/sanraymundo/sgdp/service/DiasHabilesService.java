@@ -1,5 +1,6 @@
 package gt.gob.sanraymundo.sgdp.service;
 
+import gt.gob.sanraymundo.sgdp.util.GuatemalaTime;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -57,7 +58,7 @@ public class DiasHabilesService {
     }
 
     public int diasHabilesRestantes(LocalDate fechaLimite) {
-        LocalDate hoy = LocalDate.now();
+        LocalDate hoy = GuatemalaTime.today();
         if (!fechaLimite.isAfter(hoy)) return 0;
         int count = 0;
         LocalDate cursor = hoy;

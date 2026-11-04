@@ -6,6 +6,7 @@ import gt.gob.sanraymundo.sgdp.model.entity.SolicitudInformacion;
 import gt.gob.sanraymundo.sgdp.model.enums.EstadoSolicitud;
 import gt.gob.sanraymundo.sgdp.repository.CarpetaOficioRepository;
 import gt.gob.sanraymundo.sgdp.repository.SolicitudRepository;
+import gt.gob.sanraymundo.sgdp.util.GuatemalaTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +30,7 @@ public class NotificacionService {
     @Transactional(readOnly = true)
     public List<NotificacionResponse> listar() {
         List<NotificacionResponse> notificaciones = new ArrayList<>();
-        LocalDate hoy = LocalDate.now();
+        LocalDate hoy = GuatemalaTime.today();
 
         List<SolicitudInformacion> activas = solicitudRepository.findByEstadoIn(List.of(
                 EstadoSolicitud.PENDIENTE, EstadoSolicitud.EN_PROCESO,
@@ -65,7 +66,7 @@ public class NotificacionService {
             }
         }
 
-        LocalDateTime umbralOficio = LocalDateTime.now().minusDays(DIAS_ALERTA_OFICIO);
+        LocalDateTime umbralOficio = GuatemalaTime.now().minusDays(DIAS_ALERTA_OFICIO);
         List<CarpetaOficio> desactualizadas = carpetaOficioRepository.findCarpetasDesactualizadas(umbralOficio);
         for (CarpetaOficio carpeta : desactualizadas) {
             notificaciones.add(NotificacionResponse.builder()

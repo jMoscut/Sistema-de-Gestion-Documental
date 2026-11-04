@@ -19,6 +19,7 @@ import gt.gob.sanraymundo.sgdp.repository.DocumentoRepository;
 import gt.gob.sanraymundo.sgdp.repository.SolicitudRepository;
 import gt.gob.sanraymundo.sgdp.repository.UsuarioRepository;
 import gt.gob.sanraymundo.sgdp.service.AuditoriaService;
+import gt.gob.sanraymundo.sgdp.util.GuatemalaTime;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.servlet.http.HttpServletRequest;
@@ -338,7 +339,7 @@ public class ReporteAdminController {
     }
 
     private Paragraph fechaGeneracion() {
-        return new Paragraph("Generado: " + LocalDate.now())
+        return new Paragraph("Generado: " + GuatemalaTime.today())
                 .setFontSize(8)
                 .setTextAlignment(TextAlignment.RIGHT)
                 .setFontColor(ColorConstants.GRAY);

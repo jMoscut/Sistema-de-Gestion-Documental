@@ -9,6 +9,7 @@ import gt.gob.sanraymundo.sgdp.repository.CarpetaOficioRepository;
 import gt.gob.sanraymundo.sgdp.repository.DocumentoRepository;
 import gt.gob.sanraymundo.sgdp.repository.SolicitudRepository;
 import gt.gob.sanraymundo.sgdp.service.MetaCumplimientoService;
+import gt.gob.sanraymundo.sgdp.util.GuatemalaTime;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +44,7 @@ public class DashboardAdminController {
         int conContenido = (int) carpetaOficioRepository.countCategoriasConContenidoEnSeccion("LAIP");
         int pct          = (conContenido * 100) / TOTAL_CATEGORIAS_LAIP;
 
-        LocalDateTime umbral25Dias = LocalDateTime.now().minusDays(25);
+        LocalDateTime umbral25Dias = GuatemalaTime.now().minusDays(25);
         List<CarpetaOficio> desactualizadas = carpetaOficioRepository.findCarpetasDesactualizadas(umbral25Dias);
         List<String> nombresDesactualizadas = desactualizadas.stream()
                 .map(c -> c.getCategoria().getSeccion() + " › " + c.getNombre())

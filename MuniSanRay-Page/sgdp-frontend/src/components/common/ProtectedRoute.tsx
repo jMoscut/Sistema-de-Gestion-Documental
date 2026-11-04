@@ -11,6 +11,11 @@ interface Props {
 
 const CHANGE_PASSWORD_PATH = '/admin/cambiar-contrasena'
 
+// Referencia estable: un objeto literal nuevo en cada render haría que
+// <Navigate state={...}> dispare su efecto de navegación en cada render,
+// causando un bucle infinito cuando la ruta protegida redirige a sí misma.
+const ACCESS_DENIED_STATE = { accessDenied: true }
+
 export default function ProtectedRoute({ children, roles }: Props) {
   const { isAuthenticated, isLoading, user } = useAuth()
   const location = useLocation()
@@ -32,7 +37,13 @@ export default function ProtectedRoute({ children, roles }: Props) {
   }
 
   if (roles && user && !roles.includes(user.rol)) {
-    return <Navigate to="/admin/dashboard" replace />
+    return (
+      <Navigate
+        to="/admin/dashboard"
+        replace
+        state={ACCESS_DENIED_STATE}
+      />
+    )
   }
 
   return <>{children}</>

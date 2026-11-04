@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { Link } from 'react-router-dom'
 import { ClipboardCopy, Check, Send, ArrowRight, Mail } from 'lucide-react'
@@ -86,13 +86,13 @@ function ConfirmacionScreen({
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <p className="text-xs text-gray-500 mb-1">Fecha de recepción</p>
           <p className="font-semibold text-gray-900">
-            {format(new Date(resultado.fechaRecepcion), 'dd/MM/yyyy', { locale: es })}
+            {format(parseISO(resultado.fechaRecepcion), 'dd/MM/yyyy', { locale: es })}
           </p>
         </div>
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <p className="text-xs text-gray-500 mb-1">Fecha límite de respuesta</p>
           <p className="font-semibold text-primary">
-            {format(new Date(resultado.fechaLimite), 'dd/MM/yyyy', { locale: es })}
+            {format(parseISO(resultado.fechaLimite), 'dd/MM/yyyy', { locale: es })}
           </p>
         </div>
       </div>

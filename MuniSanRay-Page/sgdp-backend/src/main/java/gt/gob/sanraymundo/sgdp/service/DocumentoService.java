@@ -19,6 +19,7 @@ import gt.gob.sanraymundo.sgdp.repository.DocumentoSpecifications;
 import gt.gob.sanraymundo.sgdp.repository.SecuenciaRepository;
 import gt.gob.sanraymundo.sgdp.repository.UsuarioRepository;
 import gt.gob.sanraymundo.sgdp.repository.VersionDocumentoRepository;
+import gt.gob.sanraymundo.sgdp.util.GuatemalaTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -86,8 +87,8 @@ public class DocumentoService {
         String codigo = generarCodigoDocumento();
 
         // 6. Construir clave R2
-        int anio = LocalDate.now().getYear();
-        int mes  = LocalDate.now().getMonthValue();
+        int anio = GuatemalaTime.today().getYear();
+        int mes  = GuatemalaTime.today().getMonthValue();
         String r2Key = String.format("documentos/%d/%02d/%s/%s",
                 anio, mes, codigo, file.getOriginalFilename());
 
@@ -330,8 +331,8 @@ public class DocumentoService {
         versionDocumentoRepository.save(snapshot);
 
         // Subir nuevo archivo a R2
-        int anio = LocalDate.now().getYear();
-        int mes  = LocalDate.now().getMonthValue();
+        int anio = GuatemalaTime.today().getYear();
+        int mes  = GuatemalaTime.today().getMonthValue();
         String nuevoR2Key = String.format("documentos/%d/%02d/%s/v%d/%s",
                 anio, mes, doc.getCodigo(), doc.getVersionActual() + 1, file.getOriginalFilename());
         r2StorageService.upload(nuevoR2Key, bytes, file.getContentType());
@@ -433,7 +434,7 @@ public class DocumentoService {
         SecuenciaCodigo seq = secuenciaRepository.findByTipoForUpdate("DOCUMENTO")
                 .orElseThrow(() -> new NegocioException("Secuencia DOCUMENTO no configurada en la base de datos"));
 
-        int anioActual = LocalDate.now().getYear();
+        int anioActual = GuatemalaTime.today().getYear();
 
         if (seq.getAnio() != anioActual) {
             seq.setUltimoNum(0);

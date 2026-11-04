@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import gt.gob.sanraymundo.sgdp.util.GuatemalaTime;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -59,7 +60,7 @@ public class EmailService {
             "DATOS DE SU SOLICITUD:\n" +
             "Código de Expediente: " + codigoExpediente + "\n" +
             "Descripción: " + descripcion + "\n" +
-            "Fecha de recepción: " + LocalDate.now() + "\n" +
+            "Fecha de recepción: " + GuatemalaTime.today() + "\n" +
             "Fecha límite de respuesta: " + fechaLimite + " (10 días hábiles)\n\n" +
             URL_SEGUIMIENTO + FIRMA;
         enviar(destino, "Solicitud recibida - Expediente " + codigoExpediente, texto,
